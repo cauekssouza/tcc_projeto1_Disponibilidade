@@ -2,37 +2,44 @@
 // Garante que não haja saída antes dos headers
 ob_start();
 
+// Força uso de cookies para evitar sessões híbridas (cookie + URL)
+ini_set('session.use_only_cookies', 1);
+
+// Recupera parâmetros do cookie da sessão
+$cookieParams = session_get_cookie_params();
+
 // Inicia a sessão apenas se ainda não estiver ativa
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
-// Limpa variáveis da sessão
+// Limpa dados da sessão no servidor
 $_SESSION = [];
 
-// Remove o cookie de sessão no navegador
-if (ini_get("session.use_cookies")) {
-    $params = session_get_cookie_params();
+// Regenera ID para evitar reutilização de sessão destruída
+session_regenerate_id(true);
 
-    // Define o cookie como expirado e com os mesmos parâmetros originais
-    setcookie(
-        session_name(),
-        '',
-        time() - 42000,
-        $params["path"],
-        $params["domain"],
-        $params["secure"],
-        $params["httponly"]
-    );
-}
+// Remove o cookie da sessão no navegador
+setcookie(
+    session_name(),
+    '',
+    [
+        'expires'  => time() - 42000,
+        'path'     => $cookieParams['path'],
+        'domain'   => $cookieParams['domain'],
+        'secure'   => $cookieParams['secure'],
+        'httponly' => $cookieParams['httponly'],
+        'samesite' => $cookieParams['samesite'] ?? 'Lax'
+    ]
+);
 
 // Destrói a sessão no servidor
 session_destroy();
 
-// Garante que o buffer seja limpo e evita travamentos por flush incorreto
-ob_end_clean();
+// Finaliza buffer e envia headers
+ob_end_flush();
 
-// Redireciona para a página de login
+// Redireciona para login
 header("Location: login.php");
 exit;
 ?>
