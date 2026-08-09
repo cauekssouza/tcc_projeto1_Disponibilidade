@@ -1,45 +1,41 @@
 <?php
-// Garante que não haja saída antes dos headers
-ob_start();
-
-// Força uso de cookies para evitar sessões híbridas (cookie + URL)
-ini_set('session.use_only_cookies', 1);
-
-// Recupera parâmetros do cookie da sessão
-$cookieParams = session_get_cookie_params();
-
-// Inicia a sessão apenas se ainda não estiver ativa
+// Garante que a sessão só será iniciada se ainda não estiver ativa
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
-// Limpa dados da sessão no servidor
+// Limpa todos os dados da sessão em memória
 $_SESSION = [];
 
-// Regenera ID para evitar reutilização de sessão destruída
-session_regenerate_id(true);
+// Força a gravação de dados pendentes e evita corrupção
+session_write_close();
 
-// Remove o cookie da sessão no navegador
-setcookie(
-    session_name(),
-    '',
-    [
-        'expires'  => time() - 42000,
-        'path'     => $cookieParams['path'],
-        'domain'   => $cookieParams['domain'],
-        'secure'   => $cookieParams['secure'],
-        'httponly' => $cookieParams['httponly'],
-        'samesite' => $cookieParams['samesite'] ?? 'Lax'
-    ]
-);
+// Remove o cookie de sessão no navegador, garantindo que não possa ser reutilizado
+if (ini_get("session.use_cookies")) {
+    $params = session_get_cookie_params();
+
+    // Define o cookie como expirado
+    setcookie(
+        session_name(),
+        '',
+        time() - 42000,
+        $params["path"],
+        $params["domain"],
+        $params["secure"],
+        $params["httponly"]
+    );
+}
+
+// Reinicia a sessão apenas para destruir corretamente no servidor
+session_start();
+
+// Regenera o ID para evitar reutilização ou fixação de sessão
+session_regenerate_id(true);
 
 // Destrói a sessão no servidor
 session_destroy();
 
-// Finaliza buffer e envia headers
-ob_end_flush();
-
-// Redireciona para login
+// Redireciona para a página de login
 header("Location: login.php");
 exit;
 ?>
