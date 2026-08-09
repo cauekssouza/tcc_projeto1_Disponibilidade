@@ -1,15 +1,12 @@
 <?php
 declare(strict_types=1);
 
-// Garante que nenhuma saída seja enviada antes dos headers
-ob_start();
-
-// Inicia a sessão apenas se ainda não estiver ativa
-if (session_status() !== PHP_SESSION_ACTIVE) {
+// Garante que nada foi enviado antes dos headers
+if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Remove todas as variáveis da sessão
+// Remove todos os dados da sessão
 $_SESSION = [];
 
 // Remove o cookie da sessão (boa prática de segurança)
@@ -29,6 +26,6 @@ if (ini_get("session.use_cookies")) {
 // Destrói a sessão
 session_destroy();
 
-// Redireciona para a página de login
-header("Location: login.php");
+// Redireciona de forma segura
+header("Location: login.php", true, 302);
 exit;
