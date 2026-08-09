@@ -9,7 +9,7 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 // Remove todas as variáveis da sessão
 $_SESSION = [];
 
-// Remove o cookie de sessão (boa prática de segurança)
+// Remove o cookie da sessão (boa prática de segurança)
 if (ini_get("session.use_cookies")) {
     $params = session_get_cookie_params();
     setcookie(
