@@ -1,19 +1,19 @@
 <?php
-// Garante que não haja saída antes dos headers
-ob_start();
-
-// Inicia a sessão somente se ainda não estiver ativa
+// Garante que a sessão só é iniciada se ainda não existir
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
-// Limpa todos os dados da sessão
+// Limpa variáveis da sessão
 $_SESSION = [];
 
-// Força a gravação e liberação do armazenamento da sessão
-session_write_close();
+// Remove dados persistidos no servidor (se existirem)
+if (ini_get("session.use_strict_mode")) {
+    // Em strict mode, o PHP já evita reutilização de IDs, mas ainda assim limpamos
+}
+session_regenerate_id(true); // Invalida o ID atual e gera um novo
 
-// Remove o cookie de sessão no navegador, se existir
+// Remove o cookie da sessão no navegador
 if (ini_get("session.use_cookies")) {
     $params = session_get_cookie_params();
 
@@ -21,7 +21,7 @@ if (ini_get("session.use_cookies")) {
         session_name(),
         '',
         [
-            'expires'  => time() - 42000,
+            'expires'  => time() - 42000, // expira imediatamente
             'path'     => $params['path'],
             'domain'   => $params['domain'],
             'secure'   => $params['secure'],
@@ -34,10 +34,10 @@ if (ini_get("session.use_cookies")) {
 // Destrói a sessão no servidor
 session_destroy();
 
-// Garante que um novo ID seja gerado na próxima sessão
-session_regenerate_id(true);
+// Evita qualquer saída antes do redirect
+ob_clean();
 
 // Redireciona para a página de login
-header("Location: login.php");
+header("Location: login.php", true, 302);
 exit;
 ?>
