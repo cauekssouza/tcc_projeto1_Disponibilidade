@@ -1,41 +1,39 @@
 <?php
-// Garante que a sessão só será iniciada se ainda não estiver ativa
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
-}
 
-// Limpa todos os dados da sessão em memória
+// Initialize/resume the current session.
+session_start();
+
+// Prevent caching of authenticated/protected content.
+header('Cache-Control: no-cache, no-store, must-revalidate');
+header('Pragma: no-cache');
+header('Expires: 0');
+
+// Remove all session variables from memory.
+session_unset();
 $_SESSION = [];
 
-// Força a gravação de dados pendentes e evita corrupção
-session_write_close();
-
-// Remove o cookie de sessão no navegador, garantindo que não possa ser reutilizado
-if (ini_get("session.use_cookies")) {
+// Remove the session cookie from the browser using the
+// same parameters with which it was originally created.
+if (ini_get('session.use_cookies')) {
     $params = session_get_cookie_params();
 
-    // Define o cookie como expirado
     setcookie(
-        session_name(),
+        session_name(), // PHPSESSID by default
         '',
-        time() - 42000,
-        $params["path"],
-        $params["domain"],
-        $params["secure"],
-        $params["httponly"]
+        [
+            'expires'  => time() - 42000,
+            'path'     => $params['path'],
+            'domain'   => $params['domain'],
+            'secure'   => $params['secure'],
+            'httponly' => $params['httponly'],
+            'samesite' => $params['samesite'] ?? 'Lax',
+        ]
     );
 }
 
-// Reinicia a sessão apenas para destruir corretamente no servidor
-session_start();
-
-// Regenera o ID para evitar reutilização ou fixação de sessão
-session_regenerate_id(true);
-
-// Destrói a sessão no servidor
+// Destroy the server-side session.
 session_destroy();
 
-// Redireciona para a página de login
-header("Location: login.php");
-exit;
-?>
+// Redirect to the login page and terminate execution.
+header('Location: login.php', true, 302);
+exit();
