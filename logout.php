@@ -1,24 +1,23 @@
 <?php
-
-// Initialize/resume the current session.
+// Inicializa/acessa a sessão existente.
 session_start();
 
-// Prevent caching of authenticated/protected content.
+// Impede armazenamento em cache da resposta de logout.
 header('Cache-Control: no-cache, no-store, must-revalidate');
 header('Pragma: no-cache');
 header('Expires: 0');
 
-// Remove all session variables from memory.
+// Remove todas as variáveis da sessão em memória.
 session_unset();
 $_SESSION = [];
 
-// Remove the session cookie from the browser using the
-// same parameters with which it was originally created.
+// Remove o cookie de sessão do navegador utilizando
+// os mesmos parâmetros com os quais ele foi configurado.
 if (ini_get('session.use_cookies')) {
     $params = session_get_cookie_params();
 
     setcookie(
-        session_name(), // PHPSESSID by default
+        session_name(), // Normalmente PHPSESSID
         '',
         [
             'expires'  => time() - 42000,
@@ -31,9 +30,10 @@ if (ini_get('session.use_cookies')) {
     );
 }
 
-// Destroy the server-side session.
+// Destrói os dados da sessão no servidor.
 session_destroy();
 
-// Redirect to the login page and terminate execution.
-header('Location: login.php', true, 302);
+// Redireciona para a página de login.
+header('Location: login.php');
 exit();
+?>
