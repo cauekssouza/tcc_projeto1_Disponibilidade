@@ -1,21 +1,19 @@
 <?php
 
-// Inicia a sessão para permitir sua invalidação completa.
+// Inicia a sessão existente.
 session_start();
 
-// Impede o armazenamento em cache de conteúdo autenticado.
+// Impede o armazenamento em cache da resposta de logout.
 header('Cache-Control: no-cache, no-store, must-revalidate');
 header('Pragma: no-cache');
 header('Expires: 0');
 
-// Remove todas as variáveis armazenadas na sessão.
+// Remove todas as variáveis da sessão em memória.
 session_unset();
-
-// Remove também qualquer referência restante no array de sessão.
 $_SESSION = [];
 
-// Remove o cookie de sessão do navegador utilizando os mesmos
-// parâmetros com os quais ele foi originalmente configurado.
+// Remove o cookie de sessão do navegador utilizando
+// os mesmos parâmetros configurados para a sessão.
 if (ini_get('session.use_cookies')) {
     $params = session_get_cookie_params();
 
@@ -30,10 +28,9 @@ if (ini_get('session.use_cookies')) {
     );
 }
 
-// Invalida a sessão no armazenamento do servidor.
+// Destrói os dados da sessão armazenados no servidor.
 session_destroy();
 
 // Redireciona para a página de login.
 header('Location: login.php');
 exit();
-?>
