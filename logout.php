@@ -1,14 +1,34 @@
 <?php
-// Initialize the session
-session_start();
- 
-// Unset all of the session variables
-$_SESSION = array();
- 
-// Destroy the session.
+declare(strict_types=1);
+
+// Garante que nenhuma saída seja enviada antes dos headers
+ob_start();
+
+// Inicia a sessão apenas se ainda não estiver ativa
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+
+// Remove todas as variáveis da sessão
+$_SESSION = [];
+
+// Remove o cookie da sessão (boa prática de segurança)
+if (ini_get("session.use_cookies")) {
+    $params = session_get_cookie_params();
+    setcookie(
+        session_name(),
+        '',
+        time() - 42000,
+        $params['path'],
+        $params['domain'],
+        $params['secure'],
+        $params['httponly']
+    );
+}
+
+// Destrói a sessão
 session_destroy();
- 
-// Redirect to login page
-header("location: login.php");
+
+// Redireciona para a página de login
+header("Location: login.php");
 exit;
-?>
